@@ -1,0 +1,55 @@
+name: Deploy EveryTube
+
+on:
+  push:
+    branches:
+      - frontend_v1
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Grab the latest code on the GitHub Runner
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # 2. Set up Node.js on GitHub
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # 3. Build the Frontend on GitHub (Saves your VM's RAM!)
+      - name: Build Frontend
+        env:
+          VITE_API_URL: https://everytube.zennin.tech/api/v1
+        run: |
+          cd frontend
+          npm install
+          npm run build
+
+      # 4. SSH into Azure, update backend, and clear old frontend files
+      - name: Update Backend
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USERNAME }}
+          key: ${{ secrets.VM_SSH_KEY }}
+          script: |
+            cd ~/everytube
+            git pull origin frontend_v1
+            cd backend
+            npm install
+            pm2 restart everytube-api
+            rm -rf ~/everytube/frontend/dist
+
+      # 5. Securely copy the newly built frontend from GitHub directly to Azure
+      - name: Upload New Frontend Build
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USERNAME }}
+          key: ${{ secrets.VM_SSH_KEY }}
+          source: "frontend/dist"
+          target: "/home/azureuser/everytube"
