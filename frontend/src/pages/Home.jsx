@@ -43,7 +43,7 @@ export default function Home() {
       <div className="flex flex-col items-center justify-center h-full text-center space-y-4">
         <PlaySquare className="h-16 w-16 text-muted-foreground" />
         <h2 className="text-2xl font-bold text-primary">Welcome to EveryTube</h2>
-        <p className="text-muted-foreground max-w-sm">Sign in to discover videos, subscribe to your favorite channels, and interact with the community.</p>
+        <p className="text-muted-foreground max-w-sm">Sign in to discover videos, subscribe to your favorite channels, and interact with the community. ❤️</p>
         <Link to="/login" className="flex items-center gap-2 px-6 py-3 bg-white text-black hover:bg-gray-200 font-semibold rounded-full transition-colors mt-4">
           <LogIn className="h-5 w-5" /> Sign in
         </Link>
