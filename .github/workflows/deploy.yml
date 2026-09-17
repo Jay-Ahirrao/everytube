@@ -3,7 +3,7 @@ name: Deploy EveryTube
 on:
   push:
     branches:
-      - frontend_v1
+      - frontend_v2
 
 jobs:
   build-and-deploy:
@@ -38,7 +38,7 @@ jobs:
           key: ${{ secrets.VM_SSH_KEY }}
           script: |
             cd ~/everytube
-            git pull origin frontend_v1
+            git pull origin frontend_v2
             cd backend
             npm install
             pm2 restart everytube-api
