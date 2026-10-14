@@ -1,4 +1,4 @@
-name: Deploy EveryTube
+name: Hybrid CI/CD Pipeline
 
 on:
   push:
@@ -8,20 +8,15 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
 
     steps:
-      # 1. Grab the latest code on the GitHub Runner
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # 2. Set up Node.js on GitHub
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      # 3. Build the Frontend on GitHub (Saves your VM's RAM!)
-      - name: Build Frontend
+      - name: Build React Frontend
         env:
           VITE_API_URL: https://everytube.zennin.tech/api/v1
         run: |
@@ -29,23 +24,7 @@ jobs:
           npm install
           npm run build
 
-      # 4. SSH into Azure, update backend, and clear old frontend files
-      - name: Update Backend
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.VM_HOST }}
-          username: ${{ secrets.VM_USERNAME }}
-          key: ${{ secrets.VM_SSH_KEY }}
-          script: |
-            cd ~/everytube
-            git pull origin frontend_v2
-            cd backend
-            npm install
-            pm2 restart everytube-api
-            rm -rf ~/everytube/frontend/dist
-
-      # 5. Securely copy the newly built frontend from GitHub directly to Azure
-      - name: Upload New Frontend Build
+      - name: Deploy Frontend to Nginx
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.VM_HOST }}
@@ -53,3 +32,41 @@ jobs:
           key: ${{ secrets.VM_SSH_KEY }}
           source: "frontend/dist"
           target: "/home/azureuser/everytube"
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and Push Backend Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/everytube-api:latest
+
+      - name: Deploy Backend Container
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USERNAME }}
+          key: ${{ secrets.VM_SSH_KEY }}
+          script: |
+            # Authenticate Azure VM to GitHub Registry
+            echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            
+            # Pull the latest backend image
+            docker pull ghcr.io/${{ github.repository_owner }}/everytube-api:latest
+            
+            # Stop and remove the old PM2 process (if it exists) and the old container
+            pm2 delete everytube-api || true
+            docker stop everytube-api || true
+            docker rm everytube-api || true
+            
+            # Start the new container on port 8000
+            docker run -d --restart unless-stopped -p 8000:8000 --name everytube-api ghcr.io/${{ github.repository_owner }}/everytube-api:latest
+            
+            # Clean up old unused images to save disk space
+            docker image prune -f
