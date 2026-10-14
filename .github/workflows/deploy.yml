@@ -44,8 +44,9 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: ./backend
+          file: ./backend/dockerfile
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/everytube-api:latest
+          tags: ghcr.io/jay-ahirrao/everytube-api:latest
 
       - name: Deploy Backend Container
         uses: appleboy/ssh-action@v1.0.3
@@ -58,7 +59,7 @@ jobs:
             echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
             
             # Pull the latest backend image
-            docker pull ghcr.io/${{ github.repository_owner }}/everytube-api:latest
+            docker pull ghcr.io/jay-ahirrao/everytube-api:latest
             
             # Stop and remove the old PM2 process (if it exists) and the old container
             pm2 delete everytube-api || true
@@ -66,7 +67,7 @@ jobs:
             docker rm everytube-api || true
             
             # Start the new container on port 8000
-            docker run -d --restart unless-stopped -p 8000:8000 --name everytube-api ghcr.io/${{ github.repository_owner }}/everytube-api:latest
+            docker run -d --restart unless-stopped -p 8000:8000 --name everytube-api ghcr.io/jay-ahirrao/everytube-api:latest
             
             # Clean up old unused images to save disk space
             docker image prune -f
