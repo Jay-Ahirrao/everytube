@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { loginUser, logoutUser, registerUser, refreshAccessToken, getCurrentUser, updateAccountDetails, updateUserAvatar, updateUserCoverImage, getUserChannelProfile, getWatchHistory, changeCurrentPassword, forgotPassword, verifyOtp, resetPassword } from "../controllers/user.controller.js";
 import { upload } from "../middlewares/multer.middleware.js";
-import { verifyJWT } from "../middlewares/auth.middleware.js";
+import { verifyJWT, optionalVerifyJWT } from "../middlewares/auth.middleware.js";
 
 let router = Router();
 
@@ -57,7 +57,7 @@ router.route("/cover-image").patch(
 );
 
 router.route("/c/:username").get(
-  verifyJWT, 
+  optionalVerifyJWT, 
   getUserChannelProfile
 );
 

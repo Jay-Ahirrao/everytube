@@ -6,13 +6,16 @@ import {
     getAllTweets,
     updateTweet,
 } from "../controllers/tweet.controller.js"
-import {verifyJWT} from "../middlewares/auth.middleware.js"
+import { verifyJWT, optionalVerifyJWT } from "../middlewares/auth.middleware.js"
 
 const router = Router();
-router.use(verifyJWT); // Apply verifyJWT middleware to all routes in this file
 
-router.route("/").post(createTweet).get(getAllTweets);
-router.route("/user/:userId").get(getUserTweets);
-router.route("/:tweetId").patch(updateTweet).delete(deleteTweet);
+// Public / Guest accessible with optional auth
+router.route("/").get(optionalVerifyJWT, getAllTweets);
+router.route("/user/:userId").get(optionalVerifyJWT, getUserTweets);
 
-export default router
+// Protected routes requiring authentication
+router.route("/").post(verifyJWT, createTweet);
+router.route("/:tweetId").patch(verifyJWT, updateTweet).delete(verifyJWT, deleteTweet);
+
+export default router;

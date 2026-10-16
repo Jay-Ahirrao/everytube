@@ -28,3 +28,28 @@ export const verifyJWT = asyncHandler(async(req, _, next) => {
     }
     
 })
+
+export const optionalVerifyJWT = asyncHandler(async(req, _, next) => {
+    try {
+        const token = req.signedCookies?.accessToken || req.cookies?.accessToken || req.header("Authorization")?.replace("Bearer ", "")
+        
+        if (!token) {
+            req.user = null;
+            return next();
+        }
+
+        const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET)
+        const user = await User.findById(decodedToken?._id).select("-password -refreshToken")
+
+        if (user) {
+            req.user = user;
+        } else {
+            req.user = null;
+        }
+        next();
+    } catch {
+        // Silently continue as unauthenticated guest if token is missing, invalid, or expired
+        req.user = null;
+        next();
+    }
+})
