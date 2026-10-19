@@ -177,7 +177,7 @@ export default function VideoDetail() {
                 <button 
                   onClick={handleToggleSubscription}
                   disabled={isTogglingSub || user?._id === video.owner?._id}
-                  className={`ml-4 px-6 py-2 rounded-full text-sm font-bold transition-all flex items-center gap-2 shadow-lg ${
+                  className={`ml-4 px-6 py-2 rounded-full text-sm font-semibold transition-all flex items-center gap-2 shadow-sm ${
                     isSubscribed 
                     ? "bg-secondary text-primary hover:bg-secondary/80 border border-primary/20" 
                     : "bg-primary text-primary-foreground hover:brightness-110"

@@ -72,7 +72,7 @@ export default function History() {
           <PlaySquare className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
           <h3 className="text-xl font-semibold text-primary">Your history is empty</h3>
           <p className="text-muted-foreground mt-2">Videos you watch will show up here.</p>
-          <Link to="/explore" className="inline-block mt-6 px-6 py-2.5 bg-primary text-primary-foreground font-bold rounded-xl transition-all">
+          <Link to="/explore" className="inline-block mt-6 px-6 py-2.5 bg-primary text-primary-foreground font-semibold rounded-full transition-all text-sm shadow-sm">
             Explore Videos
           </Link>
         </div>

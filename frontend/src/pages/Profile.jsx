@@ -1,11 +1,13 @@
 import { useState, useRef, useEffect, useCallback } from "react"
 import { useAuth } from "../context/AuthContext"
+import { useNotification } from "../context/NotificationContext"
 import { api } from "../lib/axios"
 import { Loader2, Camera, LogOut, History, User, Lock, Video, Edit2, X } from "lucide-react"
 import { Link } from "react-router-dom"
 
 export default function Profile() {
   const { user, checkAuth, logout } = useAuth()
+  const notify = useNotification()
   
   // Account Details State
   const [isEditingAccount, setIsEditingAccount] = useState(false)
@@ -93,9 +95,10 @@ export default function Profile() {
     try {
       await api.patch(`/users/${type === 'avatar' ? 'avatar' : 'cover-image'}`, formData)
       await checkAuth() // Refresh user context
+      notify.success(`${type === 'avatar' ? 'Profile photo' : 'Cover image'} updated successfully`)
     } catch (err) {
       console.error(`Failed to update ${type}`, err)
-      alert(`Failed to update ${type}`)
+      notify.error(`Failed to update ${type}`)
     } finally {
       setUploadingImage(null)
     }
@@ -204,7 +207,7 @@ export default function Profile() {
                   <input type="email" value={accountForm.email} onChange={e => setAccountForm({...accountForm, email: e.target.value})} className="w-full px-3 py-2 bg-background border border-border rounded-lg focus:ring-1 focus:ring-blue-500 outline-none" required />
                 </div>
                 <div className="pt-2">
-                  <button type="submit" disabled={updatingAccount} className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold transition-colors flex items-center justify-center gap-2 shadow-sm">
+                  <button type="submit" disabled={updatingAccount} className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold text-sm transition-colors flex items-center justify-center gap-2 shadow-sm">
                     {updatingAccount && <Loader2 className="h-4 w-4 animate-spin" />}
                     Save Changes
                   </button>
@@ -244,7 +247,7 @@ export default function Profile() {
             </form>
           </div>
 
-          <button onClick={logout} className="w-full py-3 bg-destructive/10 hover:bg-destructive/20 text-destructive rounded-xl font-bold transition-colors flex items-center justify-center gap-2">
+          <button onClick={logout} className="w-full py-2.5 bg-destructive/10 hover:bg-destructive/20 text-destructive rounded-xl font-semibold text-sm transition-colors flex items-center justify-center gap-2">
             <LogOut className="h-5 w-5" />
             Sign Out
           </button>

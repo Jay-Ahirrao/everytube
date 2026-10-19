@@ -56,15 +56,19 @@ export default function VideoCard({ video }) {
           <h3 className="text-sm font-semibold text-primary line-clamp-2 leading-tight mb-1 group-hover:text-blue-400 transition-colors">
             {video.title}
           </h3>
-          <div className="text-xs text-muted-foreground flex flex-col">
+          <div className="flex flex-col">
             <Link 
               to={`/channel/${video.owner?.userName || video.owner?.username}`} 
               onClick={(e) => e.stopPropagation()}
-              className="hover:text-primary transition-colors truncate"
+              className="text-xs font-medium text-zinc-300 hover:text-white transition-colors truncate block leading-tight"
             >
               {video.owner?.fullName || video.owner?.userName || video.owner?.username || "Unknown User"}
             </Link>
-            <span>{formatViews(video.views || 0)} views • {formatTimeAgo(video.createdAt)}</span>
+            <div className="text-[11px] font-normal text-zinc-400/80 mt-1 flex items-center gap-1.5 tracking-normal">
+              <span>{formatViews(video.views || 0)} views</span>
+              <span className="text-zinc-600 select-none">•</span>
+              <span>{formatTimeAgo(video.createdAt)}</span>
+            </div>
           </div>
         </div>
         <div className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity shrink-0">

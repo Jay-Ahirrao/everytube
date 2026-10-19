@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react"
+import { useSearchParams, Link } from "react-router-dom"
 import { api } from "../lib/axios"
 import TweetCard from "../components/ui/TweetCard"
-import { MessageSquare, Loader2, Clock, Heart } from "lucide-react"
+import { MessageSquare, Loader2, Clock, Heart, ArrowLeft } from "lucide-react"
 import { cn } from "../lib/utils"
 
 const FILTER_OPTIONS = [
@@ -10,6 +11,9 @@ const FILTER_OPTIONS = [
 ]
 
 export default function Tweets() {
+  const [searchParams] = useSearchParams()
+  const targetTweetId = searchParams.get("tweetId")
+  const shouldOpenComments = searchParams.get("openComments") === "true"
   const [tweets, setTweets] = useState([])
   const [loading, setLoading] = useState(true)
   const [activeFilter, setActiveFilter] = useState("newest")
@@ -35,7 +39,15 @@ export default function Tweets() {
     <div className="max-w-4xl mx-auto space-y-8 pb-12">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 bg-primary/10 rounded-xl text-primary">
+          <Link
+            to="/home"
+            className="p-2 bg-secondary/60 hover:bg-secondary rounded-xl text-zinc-300 hover:text-white border border-border transition-colors flex items-center justify-center shrink-0 shadow-sm"
+            title="Back to Home feed"
+            aria-label="Back to Home feed"
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </Link>
+          <div className="p-2.5 bg-primary/10 rounded-xl text-primary shrink-0">
             <MessageSquare className="h-6 w-6" />
           </div>
           <div>
@@ -53,10 +65,10 @@ export default function Tweets() {
                 key={option.id}
                 onClick={() => setActiveFilter(option.id)}
                 className={cn(
-                  "flex items-center gap-2 px-4 py-2 rounded-lg text-sm transition-all duration-200 cursor-pointer",
+                  "flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-medium transition-all duration-200 cursor-pointer",
                   isActive
-                    ? "bg-white text-black font-semibold border border-white"
-                    : "bg-transparent border border-gray-600 text-gray-300 hover:bg-gray-800"
+                    ? "bg-white text-black border border-white shadow-sm"
+                    : "bg-secondary/40 border border-white/10 text-zinc-300 hover:bg-secondary hover:text-white"
                 )}
               >
                 <option.icon className="h-4 w-4" />
@@ -80,7 +92,13 @@ export default function Tweets() {
       ) : (
         <div className="space-y-4">
           {tweets.map((tweet) => (
-            <TweetCard key={tweet._id} tweet={tweet} />
+            <TweetCard
+              key={tweet._id}
+              tweet={tweet}
+              isDashboard={false}
+              isHighlighted={tweet._id === targetTweetId}
+              initialOpenComments={tweet._id === targetTweetId && shouldOpenComments}
+            />
           ))}
         </div>
       )}

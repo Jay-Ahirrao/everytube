@@ -115,7 +115,7 @@ export default function Channel() {
                 <button 
                   onClick={handleToggleSubscription}
                   disabled={isTogglingSub}
-                  className={`px-8 py-2.5 rounded-full font-bold transition-all flex items-center gap-2 shadow-lg ${
+                  className={`px-7 py-2.5 rounded-full text-sm font-semibold transition-all flex items-center gap-2 shadow-sm ${
                     isSubscribed 
                     ? "bg-secondary text-primary hover:bg-secondary/80 border border-primary/20" 
                     : "bg-primary text-primary-foreground hover:brightness-110"
@@ -134,7 +134,7 @@ export default function Channel() {
                 </button>
               )}
               {currentUser?._id === channel._id && (
-                <Link to="/library" className="px-8 py-2.5 bg-secondary text-primary hover:bg-secondary/80 rounded-full font-bold transition-all shadow-md">
+                <Link to="/library" className="px-7 py-2.5 bg-secondary text-primary hover:bg-secondary/80 rounded-full text-sm font-semibold transition-all shadow-sm">
                   Manage Videos
                 </Link>
               )}

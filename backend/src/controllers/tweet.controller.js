@@ -63,8 +63,17 @@ const getUserTweets = asyncHandler(async (req, res) => {
             }
         },
         {
+            $lookup: {
+                from: "comments",
+                localField: "_id",
+                foreignField: "tweet",
+                as: "comments"
+            }
+        },
+        {
             $addFields: {
                 likesCount: { $size: "$likes" },
+                commentsCount: { $size: "$comments" },
                 isLiked: {
                     $cond: {
                         if: { $and: [
@@ -89,7 +98,8 @@ const getUserTweets = asyncHandler(async (req, res) => {
                 createdAt: 1,
                 owner: 1,
                 likesCount: 1,
-                isLiked: 1
+                isLiked: 1,
+                commentsCount: 1
             }
         },
         {
@@ -180,8 +190,17 @@ const getAllTweets = asyncHandler(async (req, res) => {
             }
         },
         {
+            $lookup: {
+                from: "comments",
+                localField: "_id",
+                foreignField: "tweet",
+                as: "comments"
+            }
+        },
+        {
             $addFields: {
                 likesCount: { $size: "$likes" },
+                commentsCount: { $size: "$comments" },
                 isLiked: {
                     $cond: {
                         if: { $and: [
@@ -206,7 +225,8 @@ const getAllTweets = asyncHandler(async (req, res) => {
                 createdAt: 1,
                 owner: 1,
                 likesCount: 1,
-                isLiked: 1
+                isLiked: 1,
+                commentsCount: 1
             }
         },
         {

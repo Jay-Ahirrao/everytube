@@ -140,7 +140,7 @@ export default function Comments({ videoId }) {
               <button
                 type="submit"
                 disabled={!newComment.trim() || submitting}
-                className="px-4 py-2 bg-primary text-primary-foreground rounded-full text-sm font-bold hover:brightness-110 transition-all disabled:opacity-50 flex items-center gap-2"
+                className="px-4 py-2 bg-primary text-primary-foreground rounded-full text-sm font-semibold hover:brightness-110 transition-all disabled:opacity-50 flex items-center gap-2"
               >
                 {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
                 Comment
@@ -159,7 +159,7 @@ export default function Comments({ videoId }) {
                 redirectTo: `/watch/${videoId}`,
               })
             }
-            className="px-4 py-2 bg-white text-black hover:bg-zinc-200 text-xs font-bold rounded-full transition-colors shrink-0 shadow cursor-pointer"
+            className="px-4 py-2 bg-white text-black hover:bg-zinc-200 text-xs font-semibold rounded-full transition-colors shrink-0 shadow cursor-pointer"
           >
             Sign in to comment
           </button>

@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react"
 import { useAuth } from "../context/AuthContext"
+import { useNotification } from "../context/NotificationContext"
 import { api } from "../lib/axios"
 import { Loader2, Trash2, Edit2, Eye, EyeOff } from "lucide-react"
 
 export default function Library() {
   const { user } = useAuth()
+  const notify = useNotification()
   const [videos, setVideos] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -36,9 +38,10 @@ export default function Library() {
     try {
       await api.delete(`/videos/${videoId}`)
       setVideos(videos.filter(v => v._id !== videoId))
+      notify.success("Video deleted successfully")
     } catch (error) {
       console.error("Failed to delete video", error)
-      alert("Failed to delete video")
+      notify.error("Failed to delete video")
     }
   }
 
@@ -51,9 +54,10 @@ export default function Library() {
         if (v._id === videoId) return { ...v, isPublished: newStatus }
         return v
       }))
+      notify.success(`Video ${newStatus ? 'published' : 'unpublished'} successfully`)
     } catch (error) {
       console.error("Failed to toggle publish status", error)
-      alert("Failed to toggle status")
+      notify.error("Failed to toggle publish status")
     }
   }
 
@@ -72,9 +76,10 @@ export default function Library() {
         return v
       }))
       setEditingVideo(null)
+      notify.success("Video updated successfully")
     } catch (error) {
       console.error("Failed to update video", error)
-      alert("Failed to update video")
+      notify.error("Failed to update video")
     } finally {
       setUpdating(false)
     }
@@ -226,7 +231,7 @@ export default function Library() {
                 <button
                   type="submit"
                   disabled={updating}
-                  className="flex items-center gap-2 px-6 py-2.5 bg-white text-black rounded-full font-bold hover:bg-zinc-200 transition-colors disabled:opacity-50"
+                  className="flex items-center gap-2 px-6 py-2.5 bg-white text-black rounded-full font-semibold hover:bg-zinc-200 transition-colors disabled:opacity-50 text-sm shadow-sm"
                 >
                   {updating && <Loader2 className="h-4 w-4 animate-spin" />}
                   {updating ? "Saving..." : "Save Changes"}

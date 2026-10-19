@@ -4,6 +4,7 @@ import { ApiError } from "../utils/ApiError.js"
 import { ApiResponse } from "../utils/ApiResponse.js"
 import { asyncHandler } from "../utils/asyncHandler.js"
 import { Video } from "../models/video.model.js"
+import { Tweet } from "../models/tweet.model.js"
 
 const getVideoComments = asyncHandler(async (req, res) => {
     const { videoId } = req.params;
@@ -82,6 +83,77 @@ const getVideoComments = asyncHandler(async (req, res) => {
         .json(new ApiResponse(200, commentsAggregate, "Comments fetched successfully"));
 });
 
+const getTweetComments = asyncHandler(async (req, res) => {
+    const { tweetId } = req.params;
+
+    if (!isValidObjectId(tweetId)) {
+        throw new ApiError(400, "Invalid Tweet ID");
+    }
+
+    const userId = req.user?._id ? new mongoose.Types.ObjectId(req.user._id) : null;
+
+    const commentsAggregate = await Comment.aggregate([
+        {
+            $match: {
+                tweet: new mongoose.Types.ObjectId(tweetId)
+            }
+        },
+        {
+            $lookup: {
+                from: "users",
+                localField: "owner",
+                foreignField: "_id",
+                as: "ownerDetails"
+            }
+        },
+        {
+            $unwind: "$ownerDetails"
+        },
+        {
+            $lookup: {
+                from: "likes",
+                localField: "_id",
+                foreignField: "comment",
+                as: "likes"
+            }
+        },
+        {
+            $addFields: {
+                likesCount: { $size: "$likes" },
+                isLiked: userId ? {
+                    $cond: {
+                        if: { $in: [userId, "$likes.likedBy"] },
+                        then: true,
+                        else: false
+                    }
+                } : false,
+                owner: {
+                    userName: "$ownerDetails.userName",
+                    fullName: "$ownerDetails.fullName",
+                    avatar: "$ownerDetails.avatar",
+                    _id: "$ownerDetails._id"
+                }
+            }
+        },
+        {
+            $project: {
+                content: 1,
+                createdAt: 1,
+                owner: 1,
+                likesCount: 1,
+                isLiked: 1,
+                parentComment: 1,
+                tweet: 1
+            }
+        },
+        { $sort: { createdAt: 1 } } // Oldest first for conversational thread
+    ]);
+
+    return res
+        .status(200)
+        .json(new ApiResponse(200, commentsAggregate, "Tweet comments fetched successfully"));
+});
+
 const addComment = asyncHandler(async (req, res) => {
     const { videoId } = req.params;
     const { content } = req.body;
@@ -112,6 +184,56 @@ const addComment = asyncHandler(async (req, res) => {
     return res
         .status(201)
         .json(new ApiResponse(201, comment, "Comment added successfully"));
+});
+
+const addTweetComment = asyncHandler(async (req, res) => {
+    const { tweetId } = req.params;
+    const { content, parentComment } = req.body;
+
+    if (!content || !content.trim()) {
+        throw new ApiError(400, "Comment content is required");
+    }
+
+    if (!isValidObjectId(tweetId)) {
+        throw new ApiError(400, "Invalid Tweet ID");
+    }
+
+    const tweet = await Tweet.findById(tweetId);
+    if (!tweet) {
+        throw new ApiError(404, "Tweet not found");
+    }
+
+    if (parentComment && !isValidObjectId(parentComment)) {
+        throw new ApiError(400, "Invalid parent comment ID");
+    }
+
+    const comment = await Comment.create({
+        content: content.trim(),
+        tweet: tweetId,
+        parentComment: parentComment || null,
+        owner: req.user?._id
+    });
+
+    const populatedComment = await Comment.findById(comment._id).populate(
+        "owner",
+        "userName fullName avatar _id"
+    );
+
+    const commentData = {
+        _id: populatedComment._id,
+        content: populatedComment.content,
+        tweet: populatedComment.tweet,
+        parentComment: populatedComment.parentComment,
+        owner: populatedComment.owner,
+        createdAt: populatedComment.createdAt,
+        updatedAt: populatedComment.updatedAt,
+        likesCount: 0,
+        isLiked: false
+    };
+
+    return res
+        .status(201)
+        .json(new ApiResponse(201, commentData, "Comment added successfully"));
 });
 
 const updateComment = asyncHandler(async (req, res) => {
@@ -168,7 +290,13 @@ const deleteComment = asyncHandler(async (req, res) => {
         throw new ApiError(403, "You do not have permission to delete this comment");
     }
 
-    await Comment.findByIdAndDelete(commentId);
+    // Delete the comment and cascade any direct replies to it
+    await Comment.deleteMany({
+        $or: [
+            { _id: commentId },
+            { parentComment: commentId }
+        ]
+    });
 
     return res
         .status(200)
@@ -177,7 +305,9 @@ const deleteComment = asyncHandler(async (req, res) => {
 
 export {
     getVideoComments,
+    getTweetComments,
     addComment,
+    addTweetComment,
     updateComment,
     deleteComment
 }

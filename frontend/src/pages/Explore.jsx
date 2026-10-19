@@ -56,10 +56,10 @@ export default function Explore() {
                 key={option.id}
                 onClick={() => setActiveFilter(option.id)}
                 className={cn(
-                  "flex items-center gap-2 px-4 py-2 rounded-lg text-sm transition-all duration-200 cursor-pointer",
+                  "flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-medium transition-all duration-200 cursor-pointer",
                   isActive
-                    ? "bg-white text-black font-semibold border border-white"
-                    : "bg-transparent border border-gray-600 text-gray-300 hover:bg-gray-800"
+                    ? "bg-white text-black border border-white shadow-sm"
+                    : "bg-secondary/40 border border-white/10 text-zinc-300 hover:bg-secondary hover:text-white"
                 )}
               >
                 <option.icon className="h-4 w-4" />

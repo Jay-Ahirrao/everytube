@@ -169,9 +169,10 @@ export default function Topbar({ toggleSidebar }) {
         ) : (
           <Link
             to="/login"
-            className="flex items-center gap-2 px-4 py-2 border border-border rounded-full hover:bg-secondary transition-colors text-primary font-medium text-sm"
+            className="flex items-center gap-1.5 px-3 py-1.5 border border-white/20 hover:border-white/40 hover:bg-white/10 text-white rounded-full transition-all text-xs font-semibold shadow-sm"
           >
-            <LogIn className="h-4 w-4" /> Sign in
+            <LogIn className="h-3.5 w-3.5" />
+            <span>Sign In</span>
           </Link>
         )}
       </div>

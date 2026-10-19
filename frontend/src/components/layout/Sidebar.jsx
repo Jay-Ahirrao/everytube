@@ -7,7 +7,6 @@ import {
   User, 
   PlusSquare, 
   MessageSquare, 
-  LogIn, 
   Lock 
 } from "lucide-react"
 import { useAuth } from "../../context/AuthContext"
@@ -135,23 +134,7 @@ export default function Sidebar({ isExpanded }) {
             {isExpanded && <span className="text-xs font-semibold">Video</span>}
           </Link>
         </div>
-      ) : (
-        /* Guest Mode: Upload buttons hidden; concise sign-in prompt in expanded view */
-        isExpanded && (
-          <div className="p-4 border-t border-border/80 bg-secondary/20 m-2 rounded-2xl text-center">
-            <p className="text-xs text-muted-foreground mb-2.5">
-              Sign in to upload videos and tweets
-            </p>
-            <Link
-              to="/login"
-              className="w-full py-2 px-3 bg-white text-black hover:bg-zinc-200 text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-1.5 shadow"
-            >
-              <LogIn className="h-3.5 w-3.5" />
-              <span>Sign In</span>
-            </Link>
-          </div>
-        )
-      )}
+      ) : null}
     </aside>
   )
 }
