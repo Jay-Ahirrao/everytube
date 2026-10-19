@@ -1,7 +1,6 @@
-import { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { useNavigate, useLocation, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { PlaySquare } from 'lucide-react'
 
 export default function Login() {
   const [email, setEmail] = useState('')
@@ -9,8 +8,17 @@ export default function Login() {
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   
-  const { login } = useAuth()
+  const { user, login } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
+
+  const destination = location.state?.from || '/home'
+
+  useEffect(() => {
+    if (user) {
+      navigate(destination, { replace: true })
+    }
+  }, [user, navigate, destination])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -19,7 +27,7 @@ export default function Login() {
     
     try {
       await login({ email, password })
-      navigate('/')
+      navigate(destination, { replace: true })
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to login')
     } finally {
@@ -28,35 +36,47 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4">
-      <div className="w-full max-w-md p-8 bg-card border border-border rounded-2xl shadow-xl">
-        <div className="flex flex-col items-center mb-8">
-          <PlaySquare className="h-12 w-12 text-red-600 fill-current mb-4" />
-          <h1 className="text-2xl font-bold text-primary">Welcome back</h1>
-          <p className="text-muted-foreground mt-2">Sign in to your EveryTube account</p>
+    <div className="min-h-screen flex items-center justify-center bg-black relative px-4 py-12 overflow-hidden select-none">
+      {/* Ambient neutral glow */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-white/[0.03] blur-3xl rounded-full pointer-events-none" />
+
+      {/* Subtle Background Grid Pattern */}
+      <div 
+        className="absolute inset-0 opacity-[0.03] pointer-events-none"
+        style={{
+          backgroundImage: `radial-gradient(circle at 1px 1px, white 1px, transparent 0)`,
+          backgroundSize: '32px 32px'
+        }}
+      />
+
+      <div className="w-full max-w-md p-8 sm:p-10 bg-zinc-950/75 backdrop-blur-xl border border-white/10 rounded-3xl shadow-[0_25px_60px_-15px_rgba(0,0,0,0.9)] relative z-10">
+        <div className="flex flex-col items-center mb-8 text-center">
+          <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">Welcome back</h1>
+          <p className="text-xs sm:text-sm text-zinc-400 mt-1.5">Sign in to your EveryTube account</p>
         </div>
 
         {error && (
-          <div className="mb-6 p-4 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive text-sm text-center">
+          <div className="mb-6 p-3.5 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-xs sm:text-sm text-center backdrop-blur-sm">
             {error}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-foreground mb-1.5">Email</label>
+            <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-1.5">Email</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-2 bg-background border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+              className="w-full px-4 py-2.5 bg-black/50 border border-white/15 rounded-xl text-white placeholder-zinc-500 focus:border-white focus:ring-1 focus:ring-white outline-none transition-all text-sm"
+              placeholder="name@example.com"
               required
             />
           </div>
           <div>
             <div className="flex justify-between items-center mb-1.5">
-              <label className="block text-sm font-medium text-foreground">Password</label>
-              <Link to="/forgot-password" className="text-xs text-blue-400 hover:text-blue-300 transition-colors">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-400">Password</label>
+              <Link to="/forgot-password" className="text-xs text-zinc-400 hover:text-white transition-colors">
                 Forgot password?
               </Link>
             </div>
@@ -64,25 +84,35 @@ export default function Login() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-2 bg-background border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+              className="w-full px-4 py-2.5 bg-black/50 border border-white/15 rounded-xl text-white placeholder-zinc-500 focus:border-white focus:ring-1 focus:ring-white outline-none transition-all text-sm"
+              placeholder="••••••••"
               required
             />
           </div>
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full py-2.5 px-4 bg-white text-black hover:bg-gray-200 font-semibold rounded-lg transition-colors disabled:opacity-50 mt-4"
+            className="w-full py-3 px-4 bg-white text-black hover:bg-zinc-200 font-semibold rounded-xl transition-all duration-200 active:scale-[0.99] disabled:opacity-50 mt-4 cursor-pointer shadow-lg text-sm"
           >
-            {isLoading ? 'Signing in...' : 'Sign in'}
+            {isLoading ? 'Signing in...' : 'Sign In'}
           </button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-muted-foreground">
+        <p className="mt-6 text-center text-xs sm:text-sm text-zinc-400">
           Don't have an account?{' '}
-          <Link to="/register" className="text-blue-400 hover:text-blue-300 font-medium">
+          <Link to="/register" className="text-white hover:underline font-medium">
             Register here
           </Link>
         </p>
+
+        <div className="mt-4 border-t border-white/10 pt-4 text-center">
+          <Link
+            to="/home"
+            className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors"
+          >
+            Continue as Guest →
+          </Link>
+        </div>
       </div>
     </div>
   )

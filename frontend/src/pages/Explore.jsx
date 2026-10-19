@@ -4,33 +4,35 @@ import VideoCard from "../components/ui/VideoCard"
 import { Compass, Loader2, TrendingUp, Clock, Eye } from "lucide-react"
 import { cn } from "../lib/utils"
 
-const SORT_OPTIONS = [
-  { id: "createdAt", label: "Newest", icon: Clock },
-  { id: "views", label: "Most Viewed", icon: Eye },
-  { id: "trending", label: "Trending", icon: TrendingUp },
+const FILTER_OPTIONS = [
+  { id: "newest", label: "Newest", icon: Clock, sortBy: "createdAt" },
+  { id: "most_viewed", label: "Most Viewed", icon: Eye, sortBy: "views" },
+  { id: "trending", label: "Trending", icon: TrendingUp, sortBy: "trending" },
 ]
 
 export default function Explore() {
   const [videos, setVideos] = useState([])
   const [loading, setLoading] = useState(true)
-  const [sortBy, setSortBy] = useState("createdAt")
+  const [activeFilter, setActiveFilter] = useState("newest")
+
+  const fetchVideos = async (filterId) => {
+    try {
+      setLoading(true)
+      const selected = FILTER_OPTIONS.find((opt) => opt.id === filterId) || FILTER_OPTIONS[0]
+      const sortParam = selected.sortBy === "trending" ? "views" : selected.sortBy
+      const { data } = await api.get(`/videos?sortBy=${sortParam}&sortType=desc`)
+      const videosData = data.data
+      setVideos(videosData?.videos || videosData?.docs || (Array.isArray(videosData) ? videosData : []))
+    } catch (error) {
+      console.error("Failed to fetch explore videos", error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
-    const fetchVideos = async () => {
-      try {
-        setLoading(true)
-        const { data } = await api.get(`/videos?sortBy=${sortBy === 'trending' ? 'views' : sortBy}&sortType=desc`)
-        const videosData = data.data
-        setVideos(videosData?.videos || videosData?.docs || (Array.isArray(videosData) ? videosData : []))
-      } catch (error) {
-        console.error("Failed to fetch explore videos", error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchVideos()
-  }, [sortBy])
+    fetchVideos(activeFilter)
+  }, [activeFilter])
 
   return (
     <div className="max-w-7xl mx-auto space-y-8 pb-12">
@@ -45,22 +47,26 @@ export default function Explore() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2 p-1 bg-secondary/50 rounded-xl border border-border/50">
-          {SORT_OPTIONS.map((option) => (
-            <button
-              key={option.id}
-              onClick={() => setSortBy(option.id)}
-              className={cn(
-                "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all",
-                sortBy === option.id 
-                  ? "bg-background text-primary shadow-sm" 
-                  : "text-muted-foreground hover:text-primary hover:bg-secondary"
-              )}
-            >
-              <option.icon className="h-4 w-4" />
-              {option.label}
-            </button>
-          ))}
+        {/* Filter / Sort Toggle Buttons */}
+        <div className="flex items-center gap-2">
+          {FILTER_OPTIONS.map((option) => {
+            const isActive = activeFilter === option.id
+            return (
+              <button
+                key={option.id}
+                onClick={() => setActiveFilter(option.id)}
+                className={cn(
+                  "flex items-center gap-2 px-4 py-2 rounded-lg text-sm transition-all duration-200 cursor-pointer",
+                  isActive
+                    ? "bg-white text-black font-semibold border border-white"
+                    : "bg-transparent border border-gray-600 text-gray-300 hover:bg-gray-800"
+                )}
+              >
+                <option.icon className="h-4 w-4" />
+                {option.label}
+              </button>
+            )
+          })}
         </div>
       </div>
 

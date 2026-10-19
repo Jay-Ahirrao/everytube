@@ -7,7 +7,7 @@ import VideoCard from "../components/ui/VideoCard"
 
 export default function Channel() {
   const { username } = useParams()
-  const { user: currentUser } = useAuth()
+  const { user: currentUser, openAuthModal } = useAuth()
   const [channel, setChannel] = useState(null)
   const [videos, setVideos] = useState([])
   const [loading, setLoading] = useState(true)
@@ -43,7 +43,11 @@ export default function Channel() {
 
   const handleToggleSubscription = async () => {
     if (!currentUser) {
-      alert("Please login to subscribe")
+      openAuthModal({
+        title: `Subscribe to ${channel?.fullName || username}?`,
+        message: "Sign in to subscribe to this channel and stay updated with new videos.",
+        redirectTo: `/channel/${username}`,
+      })
       return
     }
     if (isTogglingSub || !channel?._id) return

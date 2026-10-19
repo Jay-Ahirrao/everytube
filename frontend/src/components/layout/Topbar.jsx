@@ -33,7 +33,7 @@ export default function Topbar({ toggleSidebar }) {
         <button onClick={toggleSidebar} className="p-2 hover:bg-secondary rounded-full">
           <Menu className="h-5 w-5 text-muted-foreground" />
         </button>
-        <Link to="/" className="flex items-center justify-center">
+        <Link to="/home" className="flex items-center justify-center">
           <img src="/image.png" alt="EveryTube" className="h-7 w-auto object-contain" />
         </Link>
       </div>
@@ -58,10 +58,10 @@ export default function Topbar({ toggleSidebar }) {
 
         {user ? (
           <>
-            <button className="p-2 hover:bg-secondary rounded-full hidden sm:block">
+            <Link to="/upload" className="p-2 hover:bg-secondary rounded-full hidden sm:block" title="Upload Video">
               <Video className="h-5 w-5 text-primary" />
-            </button>
-            <button className="p-2 hover:bg-secondary rounded-full relative">
+            </Link>
+            <button className="p-2 hover:bg-secondary rounded-full relative" title="Notifications">
               <Bell className="h-5 w-5 text-muted-foreground" />
               <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-orange-500 border-2 border-card shadow-[0_0_8px_rgba(249,115,22,0.5)]"></span>
             </button>

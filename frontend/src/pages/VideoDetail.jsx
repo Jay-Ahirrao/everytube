@@ -7,7 +7,7 @@ import Comments from "../components/ui/Comments"
 
 export default function VideoDetail() {
   const { videoId } = useParams()
-  const { user } = useAuth()
+  const { user, openAuthModal } = useAuth()
   const [video, setVideo] = useState(null)
   const [loading, setLoading] = useState(true)
   const [isSubscribed, setIsSubscribed] = useState(false)
@@ -54,7 +54,11 @@ export default function VideoDetail() {
 
   const handleToggleLike = async () => {
     if (!user) {
-      alert("Please login to like videos")
+      openAuthModal({
+        title: "Like this video?",
+        message: "Sign in to make your opinion count and keep track of videos you've liked.",
+        redirectTo: `/watch/${videoId}`,
+      })
       return
     }
     if (isTogglingLike) return
@@ -74,7 +78,11 @@ export default function VideoDetail() {
 
   const handleToggleSubscription = async () => {
     if (!user) {
-      alert("Please login to subscribe")
+      openAuthModal({
+        title: "Want to subscribe to this channel?",
+        message: "Sign in to subscribe to this channel and stay updated with new videos.",
+        redirectTo: `/watch/${videoId}`,
+      })
       return
     }
     if (isTogglingSub || !video?.owner?._id) return
@@ -208,7 +216,18 @@ export default function VideoDetail() {
                   <span className="text-sm font-medium">Share</span>
                 </button>
                 
-                <button className="flex items-center gap-2 px-4 py-2 bg-secondary border border-border rounded-full hover:bg-secondary/80 transition-colors">
+                <button 
+                  onClick={() => {
+                    if (!user) {
+                      openAuthModal({
+                        title: "Want to save this video?",
+                        message: "Sign in to save this video to your library or playlist.",
+                        redirectTo: `/watch/${videoId}`,
+                      })
+                    }
+                  }}
+                  className="flex items-center gap-2 px-4 py-2 bg-secondary border border-border rounded-full hover:bg-secondary/80 transition-colors"
+                >
                   <ListPlus className="h-4 w-4" />
                   <span className="text-sm font-medium">Save</span>
                 </button>

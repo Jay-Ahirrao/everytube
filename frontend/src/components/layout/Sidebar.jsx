@@ -1,75 +1,157 @@
-import { NavLink, Link } from "react-router-dom"
-import { Home, Compass, PlaySquare, Clock, ThumbsUp, User, PlusSquare, MessageSquare } from "lucide-react"
+import { NavLink, Link, useNavigate } from "react-router-dom"
+import { 
+  Home, 
+  Compass, 
+  PlaySquare, 
+  Clock, 
+  User, 
+  PlusSquare, 
+  MessageSquare, 
+  LogIn, 
+  Lock 
+} from "lucide-react"
+import { useAuth } from "../../context/AuthContext"
 import { cn } from "../../lib/utils"
 
-const NAV_LINKS = [
-  { icon: Home, label: "Home", path: "/" },
-  { icon: Compass, label: "Explore", path: "/explore" },
-  { icon: MessageSquare, label: "Tweets", path: "/tweets" },
-  { icon: PlaySquare, label: "Subscriptions", path: "/subscriptions" },
-  { icon: Clock, label: "History", path: "/history" },
-  { icon: User, label: "My Library", path: "/library" },
+const NAV_ITEMS = [
+  { icon: Home, label: "Home", path: "/home", isProtected: false },
+  { icon: Compass, label: "Explore", path: "/explore", isProtected: false },
+  { icon: MessageSquare, label: "Tweets", path: "/tweets", isProtected: false },
+  { 
+    icon: PlaySquare, 
+    label: "Subscriptions", 
+    path: "/subscriptions", 
+    isProtected: true,
+    authTitle: "Don't miss new videos",
+    authMessage: "Sign in to see updates from your favorite channels and subscriptions." 
+  },
+  { 
+    icon: Clock, 
+    label: "History", 
+    path: "/history", 
+    isProtected: true,
+    authTitle: "Keep track of what you watch",
+    authMessage: "Watch history isn't viewable when signed out. Sign in to view and manage your history." 
+  },
+  { 
+    icon: User, 
+    label: "My Library", 
+    path: "/library", 
+    isProtected: true,
+    authTitle: "Enjoy your favorite videos",
+    authMessage: "Sign in to access videos that you’ve liked or saved for later." 
+  },
 ]
 
 export default function Sidebar({ isExpanded }) {
+  const { user, openAuthModal } = useAuth()
+  const navigate = useNavigate()
+
+  const handleLinkClick = (e, item) => {
+    if (item.isProtected && !user) {
+      e.preventDefault()
+      openAuthModal({
+        title: item.authTitle || `Sign in to access ${item.label}`,
+        message: item.authMessage || `Sign in to personalize your EveryTube experience.`,
+        redirectTo: item.path,
+      })
+    }
+  }
+
   return (
-    <aside className={cn(
-      "hidden md:flex flex-col border-r border-border bg-card transition-all duration-300",
-      isExpanded ? "w-64" : "w-20"
-    )}>
+    <aside
+      className={cn(
+        "hidden md:flex flex-col border-r border-border bg-card transition-all duration-300 select-none",
+        isExpanded ? "w-64" : "w-20"
+      )}
+    >
       <nav className="flex-1 overflow-y-auto py-4 px-2 space-y-1 custom-scrollbar">
-        {NAV_LINKS.map((link) => (
+        {NAV_ITEMS.map((item) => (
           <NavLink
-            key={link.path}
-            to={link.path}
+            key={item.path}
+            to={item.path}
+            onClick={(e) => handleLinkClick(e, item)}
             className={({ isActive }) =>
               cn(
-                "flex rounded-lg text-sm font-medium transition-colors hover:bg-secondary hover:text-primary",
-                isExpanded ? "items-center gap-4 px-3 py-3" : "flex-col items-center gap-1 py-3 px-1 justify-center",
-                isActive ? "bg-secondary text-primary font-semibold" : "text-muted-foreground"
+                "group flex text-sm transition-all duration-150 relative",
+                isExpanded
+                  ? "items-center gap-4 px-3 py-3"
+                  : "flex-col items-center gap-1 py-3 px-1 justify-center",
+                isActive
+                  ? "bg-gray-800 text-white font-semibold border-l-4 border-white rounded-r-xl"
+                  : "border-l-4 border-transparent text-gray-400 hover:bg-gray-800 hover:text-white rounded-r-xl"
               )
             }
           >
-            <link.icon className={cn("shrink-0", isExpanded ? "h-5 w-5" : "h-6 w-6")} />
-            <span className={cn(
-              isExpanded ? "block" : "text-[10px] text-center"
-            )}>
-              {link.label}
+            <div className="relative shrink-0">
+              <item.icon className={cn(isExpanded ? "h-5 w-5" : "h-6 w-6")} />
+              {item.isProtected && !user && isExpanded && (
+                <Lock className="absolute -top-1 -right-1.5 h-3 w-3 text-gray-400 group-hover:text-gray-200 transition-colors" />
+              )}
+            </div>
+            <span
+              className={cn(
+                "truncate",
+                isExpanded ? "block flex-1" : "text-[10px] text-center"
+              )}
+            >
+              {item.label}
             </span>
           </NavLink>
         ))}
       </nav>
 
-      <div className={cn(
-        "p-4 border-t border-border flex",
-        isExpanded ? "gap-2" : "flex-col gap-2 p-2"
-      )}>
-        <Link
-          to="/tweet"
+      {/* Upload & Creator Actions: Conditionally Rendered or Locked for Guests */}
+      {user ? (
+        <div
           className={cn(
-            "flex flex-col items-center justify-center gap-1 bg-secondary hover:bg-secondary/80 border border-border rounded-xl transition-colors text-primary",
-            isExpanded ? "flex-1 p-3" : "p-2 w-full"
+            "p-3 border-t border-border flex",
+            isExpanded ? "gap-2" : "flex-col gap-2 p-2"
           )}
         >
-          <div className="flex items-center gap-1 text-primary font-semibold">
-            <PlusSquare className="h-4 w-4" />
-          </div>
-          {isExpanded && <span className="text-xs font-semibold">Tweet</span>}
-        </Link>
+          <Link
+            to="/tweet"
+            className={cn(
+              "flex flex-col items-center justify-center gap-1 bg-secondary hover:bg-secondary/80 border border-border rounded-xl transition-colors text-primary",
+              isExpanded ? "flex-1 p-2.5" : "p-2 w-full"
+            )}
+          >
+            <div className="flex items-center gap-1 text-primary font-semibold">
+              <PlusSquare className="h-4 w-4" />
+            </div>
+            {isExpanded && <span className="text-xs font-semibold">Tweet</span>}
+          </Link>
 
-        <Link
-          to="/upload"
-          className={cn(
-            "flex flex-col items-center justify-center gap-1 bg-secondary hover:bg-secondary/80 border border-border rounded-xl transition-colors text-primary",
-            isExpanded ? "flex-1 p-3" : "p-2 w-full"
-          )}
-        >
-          <div className="flex items-center gap-1 text-accent font-semibold">
-            <PlusSquare className="h-4 w-4" />
+          <Link
+            to="/upload"
+            className={cn(
+              "flex flex-col items-center justify-center gap-1 bg-secondary hover:bg-secondary/80 border border-border rounded-xl transition-colors text-primary",
+              isExpanded ? "flex-1 p-2.5" : "p-2 w-full"
+            )}
+          >
+            <div className="flex items-center gap-1 text-white font-semibold">
+              <PlusSquare className="h-4 w-4" />
+            </div>
+            {isExpanded && <span className="text-xs font-semibold">Video</span>}
+          </Link>
+        </div>
+      ) : (
+        /* Guest Mode: Upload buttons hidden; concise sign-in prompt in expanded view */
+        isExpanded && (
+          <div className="p-4 border-t border-border/80 bg-secondary/20 m-2 rounded-2xl text-center">
+            <p className="text-xs text-muted-foreground mb-2.5">
+              Sign in to upload videos and tweets
+            </p>
+            <Link
+              to="/login"
+              className="w-full py-2 px-3 bg-white text-black hover:bg-zinc-200 text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-1.5 shadow"
+            >
+              <LogIn className="h-3.5 w-3.5" />
+              <span>Sign In</span>
+            </Link>
           </div>
-          {isExpanded && <span className="text-xs font-semibold">Video</span>}
-        </Link>
-      </div>
+        )
+      )}
     </aside>
   )
 }

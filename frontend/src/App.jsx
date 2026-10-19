@@ -1,5 +1,7 @@
-import { Routes, Route } from "react-router-dom"
+import { Routes, Route, Navigate } from "react-router-dom"
 import RootLayout from "./components/layout/RootLayout"
+import ProtectedRoute from "./components/layout/ProtectedRoute"
+import Welcome from "./pages/Welcome"
 import Home from "./pages/Home"
 import Login from "./pages/Login"
 import Register from "./pages/Register"
@@ -18,22 +20,77 @@ import ForgotPassword from "./pages/ForgotPassword"
 function App() {
   return (
     <Routes>
+      {/* Root Welcome / Landing Page */}
+      <Route path="/" element={<Welcome />} />
+
+      {/* Standalone Authentication Routes */}
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
-      <Route path="/" element={<RootLayout />}>
-        <Route index element={<Home />} />
-        <Route path="explore" element={<Explore />} />
-        <Route path="history" element={<History />} />
-        <Route path="tweets" element={<Tweets />} />
-        <Route path="watch/:videoId" element={<VideoDetail />} />
-        <Route path="upload" element={<UploadVideo />} />
-        <Route path="tweet" element={<Tweet />} />
-        <Route path="library" element={<Library />} />
-        <Route path="profile" element={<Profile />} />
-        <Route path="subscriptions" element={<Subscriptions />} />
-        <Route path="channel/:username" element={<Channel />} />
+
+      {/* Main Application with Sidebar & Topbar Layout */}
+      <Route element={<RootLayout />}>
+        {/* Public Feeds & Guest Accessible Routes */}
+        <Route path="/home" element={<Home />} />
+        <Route path="/feed" element={<Navigate to="/home" replace />} />
+        <Route path="/explore" element={<Explore />} />
+        <Route path="/tweets" element={<Tweets />} />
+        <Route path="/watch/:videoId" element={<VideoDetail />} />
+        <Route path="/channel/:username" element={<Channel />} />
+
+        {/* Protected Member Routes */}
+        <Route
+          path="/history"
+          element={
+            <ProtectedRoute>
+              <History />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/subscriptions"
+          element={
+            <ProtectedRoute>
+              <Subscriptions />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/library"
+          element={
+            <ProtectedRoute>
+              <Library />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/upload"
+          element={
+            <ProtectedRoute>
+              <UploadVideo />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/tweet"
+          element={
+            <ProtectedRoute>
+              <Tweet />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          }
+        />
       </Route>
+
+      {/* Fallback */}
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )
 }

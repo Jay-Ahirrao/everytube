@@ -4,7 +4,7 @@ import { useAuth } from "../../context/AuthContext"
 import { Loader2, Send, ThumbsUp, Trash2, MessageSquare } from "lucide-react"
 
 export default function Comments({ videoId }) {
-  const { user } = useAuth()
+  const { user, openAuthModal } = useAuth()
   const [comments, setComments] = useState([])
   const [newComment, setNewComment] = useState("")
   const [loading, setLoading] = useState(true)
@@ -46,7 +46,11 @@ export default function Comments({ videoId }) {
   const handleAddComment = async (e) => {
     e.preventDefault()
     if (!user) {
-      alert("Please login to comment")
+      openAuthModal({
+        title: "Want to comment?",
+        message: "Sign in to add your comment and join the community discussion.",
+        redirectTo: `/watch/${videoId}`,
+      })
       return
     }
     if (!newComment.trim() || submitting) return
@@ -86,7 +90,11 @@ export default function Comments({ videoId }) {
 
   const handleToggleLike = async (commentId) => {
     if (!user) {
-      alert("Please login to like comments")
+      openAuthModal({
+        title: "Like this comment?",
+        message: "Sign in to react to comments and make your opinion count.",
+        redirectTo: `/watch/${videoId}`,
+      })
       return
     }
     try {
@@ -141,8 +149,20 @@ export default function Comments({ videoId }) {
           </div>
         </form>
       ) : (
-        <div className="bg-secondary/30 p-4 rounded-xl text-center border border-dashed border-border">
-          <p className="text-sm text-muted-foreground">Please login to join the conversation.</p>
+        <div className="bg-secondary/20 p-5 rounded-2xl text-center border border-dashed border-border/80 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <p className="text-sm text-muted-foreground">Sign in to join the conversation and comment on this video.</p>
+          <button
+            onClick={() =>
+              openAuthModal({
+                title: "Want to comment?",
+                message: "Sign in to add your comment and join the community discussion.",
+                redirectTo: `/watch/${videoId}`,
+              })
+            }
+            className="px-4 py-2 bg-white text-black hover:bg-zinc-200 text-xs font-bold rounded-full transition-colors shrink-0 shadow cursor-pointer"
+          >
+            Sign in to comment
+          </button>
         </div>
       )}
 

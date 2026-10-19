@@ -187,46 +187,46 @@ export default function Library() {
         </div>
       )}
 
-      {/* Edit Modal remains similar but cleaner */}
+      {/* Edit Modal with glassmorphic black & white styling */}
       {editingVideo && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-          <div className="bg-card w-full max-w-lg rounded-2xl shadow-2xl border border-border overflow-hidden">
-            <div className="px-6 py-4 border-b border-border/50 bg-secondary/30">
-              <h2 className="text-xl font-bold text-primary">Edit Video Details</h2>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md p-4 animate-in fade-in duration-200">
+          <div className="bg-zinc-950/80 backdrop-blur-xl w-full max-w-lg rounded-2xl shadow-2xl border border-white/10 overflow-hidden">
+            <div className="px-6 py-4 border-b border-white/10 bg-white/5">
+              <h2 className="text-xl font-bold text-white">Edit Video Details</h2>
             </div>
             <form onSubmit={handleUpdate} className="p-6 space-y-5">
               <div>
-                <label className="block text-sm font-semibold text-foreground mb-1.5">Title</label>
+                <label className="block text-sm font-semibold text-white mb-1.5">Title</label>
                 <input
                   type="text"
                   value={editForm.title}
                   onChange={(e) => setEditForm({...editForm, title: e.target.value})}
-                  className="w-full px-4 py-2.5 bg-background border border-border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
+                  className="w-full px-4 py-2.5 bg-black/50 border border-white/15 rounded-xl text-white focus:border-white focus:ring-1 focus:ring-white outline-none transition-all"
                   required
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-foreground mb-1.5">Description</label>
+                <label className="block text-sm font-semibold text-white mb-1.5">Description</label>
                 <textarea
                   value={editForm.description}
                   onChange={(e) => setEditForm({...editForm, description: e.target.value})}
                   rows="4"
-                  className="w-full px-4 py-2.5 bg-background border border-border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none resize-none transition-all"
+                  className="w-full px-4 py-2.5 bg-black/50 border border-white/15 rounded-xl text-white focus:border-white focus:ring-1 focus:ring-white outline-none resize-none transition-all"
                   required
                 />
               </div>
-              <div className="flex justify-end gap-3 pt-4 border-t border-border/50">
+              <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
                 <button
                   type="button"
                   onClick={() => setEditingVideo(null)}
-                  className="px-5 py-2.5 rounded-xl font-semibold hover:bg-secondary transition-colors text-muted-foreground hover:text-primary"
+                  className="px-5 py-2.5 rounded-full font-medium hover:bg-white/10 transition-colors text-zinc-400 hover:text-white"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={updating}
-                  className="flex items-center gap-2 px-6 py-2.5 bg-primary text-primary-foreground rounded-xl font-bold hover:brightness-110 transition-colors disabled:opacity-50 shadow-lg shadow-primary/20"
+                  className="flex items-center gap-2 px-6 py-2.5 bg-white text-black rounded-full font-bold hover:bg-zinc-200 transition-colors disabled:opacity-50"
                 >
                   {updating && <Loader2 className="h-4 w-4 animate-spin" />}
                   {updating ? "Saving..." : "Save Changes"}

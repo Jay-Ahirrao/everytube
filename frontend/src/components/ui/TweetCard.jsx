@@ -4,7 +4,7 @@ import { api } from "../../lib/axios"
 import { useAuth } from "../../context/AuthContext"
 
 export default function TweetCard({ tweet }) {
-  const { user } = useAuth()
+  const { user, openAuthModal } = useAuth()
   const [likesCount, setLikesCount] = useState(tweet.likesCount || 0)
   const [isLiked, setIsLiked] = useState(tweet.isLiked || false)
   const [isTogglingLike, setIsTogglingLike] = useState(false)
@@ -27,7 +27,11 @@ export default function TweetCard({ tweet }) {
   const handleToggleLike = async (e) => {
     e.stopPropagation()
     if (!user) {
-      alert("Please login to like tweets")
+      openAuthModal({
+        title: "Like this tweet?",
+        message: "Sign in to like tweets, join discussions, and interact with creators.",
+        redirectTo: window.location.pathname || "/home",
+      })
       return
     }
     if (isTogglingLike) return

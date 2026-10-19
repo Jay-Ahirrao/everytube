@@ -37,6 +37,10 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
+  /* Instant hover: remove all transition delay on mouse-enter */
+  *:hover {
+    transition-duration: 0ms !important;
+  }
 }
 
 @layer utilities {
