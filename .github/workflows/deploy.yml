@@ -50,24 +50,42 @@ jobs:
 
       - name: Deploy Backend Container
         uses: appleboy/ssh-action@v1.0.3
+        env:
+          BACKEND_ENV: ${{ secrets.BACKEND_ENV }}
         with:
           host: ${{ secrets.VM_HOST }}
           username: ${{ secrets.VM_USERNAME }}
           key: ${{ secrets.VM_SSH_KEY }}
+          envs: BACKEND_ENV
           script: |
             # Authenticate Azure VM to GitHub Registry
             echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
             
             # Pull the latest backend image
             docker pull ghcr.io/jay-ahirrao/everytube-api:latest
+
+            # Ensure host directory exists
+            mkdir -p /home/azureuser/everytube
+
+            # If GitHub Secret BACKEND_ENV is set, sync it to host /home/azureuser/everytube/.env
+            if [ -n "$BACKEND_ENV" ]; then
+              printf '%s\n' "$BACKEND_ENV" > /home/azureuser/everytube/.env
+              chmod 600 /home/azureuser/everytube/.env
+            fi
+
+            # Ensure .env file exists on the VM host
+            touch /home/azureuser/everytube/.env
             
             # Stop and remove the old PM2 process (if it exists) and the old container
             pm2 delete everytube-api || true
             docker stop everytube-api || true
             docker rm everytube-api || true
             
-            # Start the new container on port 8000
-            docker run -d --restart unless-stopped -p 8000:8000 --name everytube-api ghcr.io/jay-ahirrao/everytube-api:latest
+            # Start the new container on port 8000 mounting the persistent .env
+            docker run -d --restart unless-stopped -p 8000:8000 \
+              --env-file /home/azureuser/everytube/.env \
+              -v /home/azureuser/everytube/.env:/app/.env \
+              --name everytube-api ghcr.io/jay-ahirrao/everytube-api:latest
             
             # Clean up old unused images to save disk space
             docker image prune -f
