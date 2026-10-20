@@ -50,13 +50,15 @@ jobs:
 
       - name: Prepare Backend Env Secret (Base64)
         id: encode_env
-        if: ${{ secrets.BACKEND_ENV != '' }}
-        run: |
-          # Safely encode multiline secret into single-line Base64 to prevent shell newline/escaping corruption
-          ENCODED_ENV=$(printf '%s' "$BACKEND_ENV" | base64 -w 0)
-          echo "b64=$ENCODED_ENV" >> "$GITHUB_OUTPUT"
         env:
           BACKEND_ENV: ${{ secrets.BACKEND_ENV }}
+        run: |
+          if [ -n "$BACKEND_ENV" ]; then
+            ENCODED_ENV=$(printf '%s' "$BACKEND_ENV" | base64 -w 0)
+            echo "b64=$ENCODED_ENV" >> "$GITHUB_OUTPUT"
+          else
+            echo "b64=" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Deploy Backend Container
         uses: appleboy/ssh-action@v1.0.3
