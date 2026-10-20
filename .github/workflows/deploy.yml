@@ -48,15 +48,25 @@ jobs:
           push: true
           tags: ghcr.io/jay-ahirrao/everytube-api:latest
 
+      - name: Prepare Backend Env Secret (Base64)
+        id: encode_env
+        if: ${{ secrets.BACKEND_ENV != '' }}
+        run: |
+          # Safely encode multiline secret into single-line Base64 to prevent shell newline/escaping corruption
+          ENCODED_ENV=$(printf '%s' "$BACKEND_ENV" | base64 -w 0)
+          echo "b64=$ENCODED_ENV" >> "$GITHUB_OUTPUT"
+        env:
+          BACKEND_ENV: ${{ secrets.BACKEND_ENV }}
+
       - name: Deploy Backend Container
         uses: appleboy/ssh-action@v1.0.3
         env:
-          BACKEND_ENV: ${{ secrets.BACKEND_ENV }}
+          BACKEND_ENV_B64: ${{ steps.encode_env.outputs.b64 }}
         with:
           host: ${{ secrets.VM_HOST }}
           username: ${{ secrets.VM_USERNAME }}
           key: ${{ secrets.VM_SSH_KEY }}
-          envs: BACKEND_ENV
+          envs: BACKEND_ENV_B64
           script: |
             # Authenticate Azure VM to GitHub Registry
             echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
@@ -67,14 +77,21 @@ jobs:
             # Ensure host directory exists
             mkdir -p /home/azureuser/everytube
 
-            # If GitHub Secret BACKEND_ENV is set, sync it to host /home/azureuser/everytube/.env
-            if [ -n "$BACKEND_ENV" ]; then
-              printf '%s\n' "$BACKEND_ENV" > /home/azureuser/everytube/.env
-              chmod 600 /home/azureuser/everytube/.env
+            # If GitHub Secret BACKEND_ENV is provided, decode and update /home/azureuser/everytube/.env
+            if [ -n "$BACKEND_ENV_B64" ]; then
+              echo "$BACKEND_ENV_B64" | base64 -d > /home/azureuser/everytube/.env
+              echo "Successfully synced .env from GitHub Secrets (BACKEND_ENV)."
             fi
 
-            # Ensure .env file exists on the VM host
-            touch /home/azureuser/everytube/.env
+            # Validate that .env exists and is not empty before starting container
+            if [ ! -s /home/azureuser/everytube/.env ]; then
+              echo "::error:: /home/azureuser/everytube/.env is missing or empty! Please populate /home/azureuser/everytube/.env on the VM or set the BACKEND_ENV repository secret."
+              exit 1
+            fi
+
+            # Sanitize CRLF line endings and secure permissions
+            sed -i 's/\r$//' /home/azureuser/everytube/.env
+            chmod 600 /home/azureuser/everytube/.env
             
             # Stop and remove the old PM2 process (if it exists) and the old container
             pm2 delete everytube-api || true

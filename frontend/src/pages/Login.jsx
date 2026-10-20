@@ -105,12 +105,13 @@ export default function Login() {
           </Link>
         </p>
 
-        <div className="mt-4 border-t border-white/10 pt-4 text-center">
+        <div className="mt-5 border-t border-white/10 pt-4 text-center">
           <Link
             to="/home"
-            className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors"
+            className="inline-flex items-center gap-2 text-xs font-semibold px-4 py-2 rounded-full bg-white/10 hover:bg-white/15 border border-white/20 text-white backdrop-blur-md transition-all shadow-[0_0_12px_rgba(255,255,255,0.08)]"
           >
-            Continue as Guest →
+            <span>Continue as Guest</span>
+            <span aria-hidden="true">→</span>
           </Link>
         </div>
       </div>
